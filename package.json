@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "db:check": "tsx scripts/check-db.ts",
-    "hash-password": "tsx scripts/hash-password.ts"
+    "hash-password": "tsx scripts/hash-password.ts",
+    "test:automatisations": "tsx scripts/test-automatisations.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",
