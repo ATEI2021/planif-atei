@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { creerIntervention } from "@/lib/actions/interventions";
+import { HEURE_DEBUT_DEFAUT, HEURE_FIN_DEFAUT } from "@/lib/horaires";
 
 export interface ValeursInitiales {
   reference_sinistre?: string;
@@ -18,7 +19,7 @@ export interface ValeursInitiales {
 const COMPAGNIES = ["PACIFICA", "VIAREN", "REPARTIM", "DYNAREN"];
 
 export function InterventionForm({ valeursInitiales = {} }: { valeursInitiales?: ValeursInitiales }) {
-  const [creneaux, setCreneaux] = useState([{ date: "", debut: "", fin: "" }, { date: "", debut: "", fin: "" }, { date: "", debut: "", fin: "" }]);
+  const [creneaux, setCreneaux] = useState(["", "", ""]);
   const [preparatifs, setPreparatifs] = useState<string[]>(valeursInitiales.preparatifs_liste ?? [""]);
 
   return (
@@ -83,11 +84,11 @@ export function InterventionForm({ valeursInitiales = {} }: { valeursInitiales?:
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="mb-1 block text-sm text-gray-700">Durée prévue</label>
+          <label className="mb-1 block text-sm text-gray-700">Durée prévue (jours)</label>
           <input
             name="duree_prevue"
             required
-            placeholder="ex. 2h"
+            placeholder="ex. 3 jours"
             defaultValue={valeursInitiales.duree_prevue}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
           />
@@ -98,7 +99,7 @@ export function InterventionForm({ valeursInitiales = {} }: { valeursInitiales?:
             type="number"
             name="fenetre_modification_jours"
             min={1}
-            defaultValue={valeursInitiales.fenetre_modification_jours ?? 7}
+            defaultValue={valeursInitiales.fenetre_modification_jours ?? 10}
             className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
           />
         </div>
@@ -148,38 +149,17 @@ export function InterventionForm({ valeursInitiales = {} }: { valeursInitiales?:
       </div>
 
       <div>
-        <label className="mb-2 block text-sm text-gray-700">Créneaux proposés (3 à 5)</label>
-        {creneaux.map((c, i) => (
-          <div key={i} className="mb-2 grid grid-cols-[1fr_1fr_1fr_auto] gap-2">
+        <label className="mb-1 block text-sm text-gray-700">Créneaux proposés (3 à 5)</label>
+        <p className="mb-2 text-xs text-gray-500">Horaires fixes {HEURE_DEBUT_DEFAUT}–{HEURE_FIN_DEFAUT}</p>
+        {creneaux.map((date, i) => (
+          <div key={i} className="mb-2 flex gap-2">
             <input
               type="date"
               name="creneau_date"
-              value={c.date}
+              value={date}
               onChange={(e) => {
                 const copie = [...creneaux];
-                copie[i] = { ...copie[i], date: e.target.value };
-                setCreneaux(copie);
-              }}
-              className="rounded border border-gray-300 px-2 py-2 text-sm"
-            />
-            <input
-              type="time"
-              name="creneau_debut"
-              value={c.debut}
-              onChange={(e) => {
-                const copie = [...creneaux];
-                copie[i] = { ...copie[i], debut: e.target.value };
-                setCreneaux(copie);
-              }}
-              className="rounded border border-gray-300 px-2 py-2 text-sm"
-            />
-            <input
-              type="time"
-              name="creneau_fin"
-              value={c.fin}
-              onChange={(e) => {
-                const copie = [...creneaux];
-                copie[i] = { ...copie[i], fin: e.target.value };
+                copie[i] = e.target.value;
                 setCreneaux(copie);
               }}
               className="rounded border border-gray-300 px-2 py-2 text-sm"
@@ -196,7 +176,7 @@ export function InterventionForm({ valeursInitiales = {} }: { valeursInitiales?:
         {creneaux.length < 5 && (
           <button
             type="button"
-            onClick={() => setCreneaux([...creneaux, { date: "", debut: "", fin: "" }])}
+            onClick={() => setCreneaux([...creneaux, ""])}
             className="text-sm text-atei-navy underline"
           >
             + Ajouter un créneau

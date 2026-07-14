@@ -1,5 +1,6 @@
 import { db, ready, toPlain } from "./client";
 import { generateToken } from "@/lib/token";
+import { FENETRE_MODIFICATION_JOURS_DEFAUT } from "@/lib/horaires";
 import type { Intervention, StatutIntervention } from "./types";
 
 export interface NouvelleIntervention {
@@ -30,7 +31,7 @@ export async function createIntervention(data: NouvelleIntervention): Promise<In
       data.duree_prevue,
       JSON.stringify(data.preparatifs_liste ?? []),
       data.preparatifs_libre ?? "",
-      data.fenetre_modification_jours ?? 7,
+      data.fenetre_modification_jours ?? FENETRE_MODIFICATION_JOURS_DEFAUT,
       generateToken(),
     ],
   });

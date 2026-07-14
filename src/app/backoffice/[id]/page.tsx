@@ -114,10 +114,8 @@ export default async function InterventionPage({ params }: { params: Promise<{ i
             </ul>
 
             {intervention.statut !== "confirmee" && intervention.statut !== "annulee" && (
-              <form action={ajouterCreneauAction.bind(null, interventionId)} className="grid grid-cols-[1fr_1fr_1fr_auto] gap-2">
+              <form action={ajouterCreneauAction.bind(null, interventionId)} className="flex gap-2">
                 <input type="date" name="date" required className="rounded border border-gray-300 px-2 py-1.5 text-sm" />
-                <input type="time" name="heure_debut" required className="rounded border border-gray-300 px-2 py-1.5 text-sm" />
-                <input type="time" name="heure_fin" required className="rounded border border-gray-300 px-2 py-1.5 text-sm" />
                 <button type="submit" className="rounded border border-atei-navy px-3 text-sm text-atei-navy">
                   Ajouter
                 </button>

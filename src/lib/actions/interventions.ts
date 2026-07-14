@@ -12,6 +12,7 @@ import { proposerCreneau, libererCreneau } from "@/db/creneaux";
 import { ajouterEvenement } from "@/db/evenements";
 import { envoyerSms, envoyerEmailVincent } from "@/lib/brevo";
 import { smsInvitation } from "@/lib/sms-templates";
+import { HEURE_DEBUT_DEFAUT, HEURE_FIN_DEFAUT, FENETRE_MODIFICATION_JOURS_DEFAUT } from "@/lib/horaires";
 import type { Intervention } from "@/db/types";
 
 function getListe(formData: FormData, name: string): string[] {
@@ -23,8 +24,6 @@ function getListe(formData: FormData, name: string): string[] {
 
 export async function creerIntervention(formData: FormData): Promise<void> {
   const dates = getListe(formData, "creneau_date");
-  const debuts = getListe(formData, "creneau_debut");
-  const fins = getListe(formData, "creneau_fin");
 
   const intervention = await createIntervention({
     reference_sinistre: String(formData.get("reference_sinistre") ?? "").trim(),
@@ -35,12 +34,11 @@ export async function creerIntervention(formData: FormData): Promise<void> {
     duree_prevue: String(formData.get("duree_prevue") ?? "").trim(),
     preparatifs_liste: getListe(formData, "preparatif"),
     preparatifs_libre: String(formData.get("preparatifs_libre") ?? "").trim(),
-    fenetre_modification_jours: Number(formData.get("fenetre_modification_jours") ?? 7),
+    fenetre_modification_jours: Number(formData.get("fenetre_modification_jours") ?? FENETRE_MODIFICATION_JOURS_DEFAUT),
   });
 
-  for (let i = 0; i < dates.length; i++) {
-    if (!dates[i] || !debuts[i] || !fins[i]) continue;
-    await proposerCreneau(intervention.id, { date: dates[i], heure_debut: debuts[i], heure_fin: fins[i] });
+  for (const date of dates) {
+    await proposerCreneau(intervention.id, { date, heure_debut: HEURE_DEBUT_DEFAUT, heure_fin: HEURE_FIN_DEFAUT });
   }
 
   redirect(`/backoffice/${intervention.id}`);
@@ -67,10 +65,8 @@ export async function dupliquerIntervention(sourceId: number): Promise<void> {
 
 export async function ajouterCreneauAction(interventionId: number, formData: FormData): Promise<void> {
   const date = String(formData.get("date") ?? "");
-  const heureDebut = String(formData.get("heure_debut") ?? "");
-  const heureFin = String(formData.get("heure_fin") ?? "");
-  if (date && heureDebut && heureFin) {
-    await proposerCreneau(interventionId, { date, heure_debut: heureDebut, heure_fin: heureFin });
+  if (date) {
+    await proposerCreneau(interventionId, { date, heure_debut: HEURE_DEBUT_DEFAUT, heure_fin: HEURE_FIN_DEFAUT });
   }
   revalidatePath(`/backoffice/${interventionId}`);
 }
