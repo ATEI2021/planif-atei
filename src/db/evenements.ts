@@ -1,4 +1,4 @@
-import { db, ready } from "./client";
+import { db, ready, toPlain } from "./client";
 import type { AuteurEvenement, Evenement, TypeEvenement } from "./types";
 
 export async function ajouterEvenement(
@@ -20,7 +20,7 @@ export async function listEvenements(interventionId: number): Promise<Evenement[
     sql: "SELECT * FROM evenements WHERE intervention_id = ? ORDER BY created_at ASC",
     args: [interventionId],
   });
-  return result.rows as unknown as Evenement[];
+  return toPlain<Evenement[]>(result.rows);
 }
 
 export async function evenementDejaEnvoye(interventionId: number, type: TypeEvenement): Promise<boolean> {

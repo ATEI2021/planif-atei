@@ -41,3 +41,9 @@ export function ready(): Promise<void> {
   }
   return globalThis.__planifSchemaReady;
 }
+
+// Les Row renvoyees par @libsql/client ne sont pas de purs objets JS (methodes sur le prototype),
+// ce que React refuse de serialiser vers un Client Component. On les aplatit ici.
+export function toPlain<T>(row: unknown): T {
+  return JSON.parse(JSON.stringify(row)) as T;
+}

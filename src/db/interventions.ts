@@ -1,4 +1,4 @@
-import { db, ready } from "./client";
+import { db, ready, toPlain } from "./client";
 import { generateToken } from "@/lib/token";
 import type { Intervention, StatutIntervention } from "./types";
 
@@ -41,19 +41,19 @@ export async function createIntervention(data: NouvelleIntervention): Promise<In
 export async function getInterventionById(id: number): Promise<Intervention | undefined> {
   await ready();
   const result = await db.execute({ sql: "SELECT * FROM interventions WHERE id = ?", args: [id] });
-  return result.rows[0] as unknown as Intervention | undefined;
+  return result.rows[0] ? toPlain<Intervention>(result.rows[0]) : undefined;
 }
 
 export async function getInterventionByToken(token: string): Promise<Intervention | undefined> {
   await ready();
   const result = await db.execute({ sql: "SELECT * FROM interventions WHERE token = ?", args: [token] });
-  return result.rows[0] as unknown as Intervention | undefined;
+  return result.rows[0] ? toPlain<Intervention>(result.rows[0]) : undefined;
 }
 
 export async function listInterventions(): Promise<Intervention[]> {
   await ready();
   const result = await db.execute("SELECT * FROM interventions ORDER BY created_at DESC");
-  return result.rows as unknown as Intervention[];
+  return toPlain<Intervention[]>(result.rows);
 }
 
 export async function updateInterventionStatut(id: number, statut: StatutIntervention): Promise<void> {

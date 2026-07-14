@@ -1,4 +1,4 @@
-import { db, ready } from "./client";
+import { db, ready, toPlain } from "./client";
 import type { Creneau } from "./types";
 
 export interface NouveauCreneau {
@@ -15,7 +15,7 @@ export async function proposerCreneau(interventionId: number, creneau: NouveauCr
     args: [creneau.date, creneau.heure_debut, creneau.heure_fin],
   });
 
-  let creneauFinal = existant.rows[0] as unknown as Creneau | undefined;
+  let creneauFinal = existant.rows[0] ? toPlain<Creneau>(existant.rows[0]) : undefined;
 
   if (!creneauFinal) {
     const inserted = await db.execute({
@@ -36,7 +36,7 @@ export async function proposerCreneau(interventionId: number, creneau: NouveauCr
 export async function getCreneauById(id: number): Promise<Creneau | undefined> {
   await ready();
   const result = await db.execute({ sql: "SELECT * FROM creneaux WHERE id = ?", args: [id] });
-  return result.rows[0] as unknown as Creneau | undefined;
+  return result.rows[0] ? toPlain<Creneau>(result.rows[0]) : undefined;
 }
 
 export async function listCreneauxProposes(interventionId: number): Promise<Creneau[]> {
@@ -48,7 +48,7 @@ export async function listCreneauxProposes(interventionId: number): Promise<Cren
           ORDER BY c.date, c.heure_debut`,
     args: [interventionId],
   });
-  return result.rows as unknown as Creneau[];
+  return toPlain<Creneau[]>(result.rows);
 }
 
 // Remet un créneau confirmé à disposition (utilisé lors d'un veto).
@@ -58,4 +58,15 @@ export async function libererCreneau(creneauId: number): Promise<void> {
     sql: "UPDATE creneaux SET statut = 'libre', intervention_confirmee_id = NULL WHERE id = ?",
     args: [creneauId],
   });
+}
+
+// Reservation atomique : ne reussit que si le creneau etait encore libre
+// (premier arrive gagne, meme si le creneau est propose a plusieurs interventions).
+export async function reserverCreneau(creneauId: number, interventionId: number): Promise<boolean> {
+  await ready();
+  const result = await db.execute({
+    sql: "UPDATE creneaux SET statut = 'pris', intervention_confirmee_id = ? WHERE id = ? AND statut = 'libre'",
+    args: [interventionId, creneauId],
+  });
+  return result.rowsAffected === 1;
 }
