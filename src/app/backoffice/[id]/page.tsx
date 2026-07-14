@@ -28,6 +28,8 @@ const EVENEMENT_LABELS: Record<string, string> = {
   alerte_j8: "Alerte J+8",
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function InterventionPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const interventionId = Number(id);

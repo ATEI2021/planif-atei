@@ -3,6 +3,8 @@ import { listInterventions } from "@/db/interventions";
 import { StatutBadge } from "@/components/StatutBadge";
 import { LogoutButton } from "@/components/LogoutButton";
 
+export const dynamic = "force-dynamic";
+
 export default async function BackofficePage() {
   const interventions = await listInterventions();
 
