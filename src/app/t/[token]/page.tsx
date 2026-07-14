@@ -8,6 +8,7 @@ import { modificationEncorePossible } from "@/lib/fenetre";
 export const dynamic = "force-dynamic";
 
 const ATEI_TEL = "07 89 79 89 77";
+const ATEI_EMAIL = "ateipro@hotmail.com";
 
 export default async function PageAssure({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
@@ -132,7 +133,7 @@ function PiedRgpd() {
     <p className="mt-8 text-center text-xs text-gray-400">
       Vos données (nom, téléphone, adresse, référence sinistre) sont utilisées dans le cadre de
       l&apos;exécution de l&apos;intervention mandatée par votre assureur, et conservées 5 ans. Aucun
-      cookie ni traceur sur cette page. ATEI — {ATEI_TEL}
+      cookie ni traceur sur cette page. ATEI — {ATEI_TEL} — {ATEI_EMAIL}
     </p>
   );
 }
