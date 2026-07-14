@@ -10,6 +10,9 @@ import {
 } from "@/db/interventions";
 import { proposerCreneau, libererCreneau } from "@/db/creneaux";
 import { ajouterEvenement } from "@/db/evenements";
+import { envoyerSms, envoyerEmailVincent } from "@/lib/brevo";
+import { smsInvitation } from "@/lib/sms-templates";
+import type { Intervention } from "@/db/types";
 
 function getListe(formData: FormData, name: string): string[] {
   return formData
@@ -72,16 +75,46 @@ export async function ajouterCreneauAction(interventionId: number, formData: For
   revalidatePath(`/backoffice/${interventionId}`);
 }
 
+function lienAssure(token: string): string {
+  return `${process.env.APP_URL ?? "http://localhost:3000"}/t/${token}`;
+}
+
+async function envoyerInvitationSms(intervention: Intervention, contexte: "vincent"): Promise<void> {
+  const texte = smsInvitation({
+    compagnie: intervention.compagnie,
+    ref: intervention.reference_sinistre,
+    lien: lienAssure(intervention.token),
+    duree: intervention.duree_prevue,
+  });
+
+  try {
+    const resultat = await envoyerSms(intervention.assure_telephone, texte);
+    await ajouterEvenement(
+      intervention.id,
+      "sms_envoye",
+      contexte,
+      resultat.simule ? "Invitation (simulation, BREVO_API_KEY non configurée)" : "Invitation"
+    );
+    await updateInterventionStatut(intervention.id, "envoyee");
+  } catch (err) {
+    await ajouterEvenement(intervention.id, "sms_echec", "systeme", String(err));
+    await envoyerEmailVincent(
+      `[PLANIF] ${intervention.reference_sinistre} — Échec d'envoi SMS`,
+      `L'envoi du SMS d'invitation a échoué pour l'intervention ${intervention.reference_sinistre} (${intervention.compagnie}).\n\nErreur : ${err}`
+    );
+  }
+}
+
 export async function envoyerInvitation(interventionId: number): Promise<void> {
-  await ajouterEvenement(interventionId, "sms_envoye", "vincent", "Invitation (simulation, SMS branché à l'étape 6)");
-  await updateInterventionStatut(interventionId, "envoyee");
+  const intervention = await getInterventionById(interventionId);
+  if (intervention) await envoyerInvitationSms(intervention, "vincent");
   revalidatePath(`/backoffice/${interventionId}`);
   revalidatePath("/backoffice");
 }
 
 export async function renvoyerSms(interventionId: number): Promise<void> {
-  await ajouterEvenement(interventionId, "sms_envoye", "vincent", "Renvoi manuel (simulation, SMS branché à l'étape 6)");
-  await updateInterventionStatut(interventionId, "envoyee");
+  const intervention = await getInterventionById(interventionId);
+  if (intervention) await envoyerInvitationSms(intervention, "vincent");
   revalidatePath(`/backoffice/${interventionId}`);
   revalidatePath("/backoffice");
 }
