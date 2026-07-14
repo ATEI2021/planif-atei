@@ -1,5 +1,5 @@
--- Schéma V1 — portail planification interventions ATEI
-
+// Schéma V1 — portail planification interventions ATEI
+export const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS interventions (
   id                        INTEGER PRIMARY KEY AUTOINCREMENT,
   reference_sinistre        TEXT NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS interventions (
   assure_telephone          TEXT NOT NULL,
   adresse_chantier          TEXT NOT NULL,
   duree_prevue              TEXT NOT NULL,
-  preparatifs_liste         TEXT NOT NULL DEFAULT '[]', -- JSON array de chaînes
+  preparatifs_liste         TEXT NOT NULL DEFAULT '[]',
   preparatifs_libre         TEXT NOT NULL DEFAULT '',
   statut                    TEXT NOT NULL DEFAULT 'brouillon'
                              CHECK (statut IN ('brouillon','envoyee','confirmee','en_veto','a_recontacter','sans_reponse','annulee')),
@@ -25,9 +25,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_interventions_token ON interventions(token
 
 CREATE TABLE IF NOT EXISTS creneaux (
   id                        INTEGER PRIMARY KEY AUTOINCREMENT,
-  date                      TEXT NOT NULL,        -- YYYY-MM-DD
-  heure_debut               TEXT NOT NULL,        -- HH:MM
-  heure_fin                 TEXT NOT NULL,        -- HH:MM
+  date                      TEXT NOT NULL,
+  heure_debut               TEXT NOT NULL,
+  heure_fin                 TEXT NOT NULL,
   statut                    TEXT NOT NULL DEFAULT 'libre' CHECK (statut IN ('libre','pris')),
   intervention_confirmee_id INTEGER REFERENCES interventions(id),
   created_at                TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
@@ -57,3 +57,4 @@ CREATE TABLE IF NOT EXISTS evenements (
 );
 
 CREATE INDEX IF NOT EXISTS idx_evenements_intervention ON evenements(intervention_id);
+`;

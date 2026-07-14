@@ -50,3 +50,12 @@ export async function listCreneauxProposes(interventionId: number): Promise<Cren
   });
   return result.rows as unknown as Creneau[];
 }
+
+// Remet un créneau confirmé à disposition (utilisé lors d'un veto).
+export async function libererCreneau(creneauId: number): Promise<void> {
+  await ready();
+  await db.execute({
+    sql: "UPDATE creneaux SET statut = 'libre', intervention_confirmee_id = NULL WHERE id = ?",
+    args: [creneauId],
+  });
+}

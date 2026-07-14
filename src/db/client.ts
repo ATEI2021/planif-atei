@@ -1,6 +1,7 @@
 import { createClient, type Client } from "@libsql/client";
 import fs from "node:fs";
 import path from "node:path";
+import { SCHEMA_SQL } from "./schema";
 
 function resolveUrl(): string {
   return process.env.TURSO_DATABASE_URL ?? "file:./data/planif.db";
@@ -9,7 +10,7 @@ function resolveUrl(): string {
 function createConnection(): Client {
   const url = resolveUrl();
   if (url.startsWith("file:")) {
-    const dbPath = path.resolve(process.cwd(), url.replace(/^file:/, ""));
+    const dbPath = path.resolve(/*turbopackIgnore: true*/ process.cwd(), url.replace(/^file:/, ""));
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
   }
   return createClient({
@@ -30,8 +31,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 function initSchema(): Promise<void> {
-  const schema = fs.readFileSync(path.join(process.cwd(), "src/db/schema.sql"), "utf-8");
-  return db.executeMultiple(schema);
+  return db.executeMultiple(SCHEMA_SQL);
 }
 
 // La première requête de chaque instance applique le schéma (idempotent, CREATE TABLE IF NOT EXISTS).

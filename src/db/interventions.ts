@@ -63,3 +63,26 @@ export async function updateInterventionStatut(id: number, statut: StatutInterve
     args: [statut, id],
   });
 }
+
+export async function confirmerCreneauIntervention(id: number, creneauId: number): Promise<void> {
+  await ready();
+  const veto = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+  await db.execute({
+    sql: `UPDATE interventions
+          SET statut = 'confirmee', creneau_confirme_id = ?, veto_deadline_at = ?,
+              updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id = ?`,
+    args: [creneauId, veto, id],
+  });
+}
+
+export async function annulerConfirmationIntervention(id: number, statut: StatutIntervention): Promise<void> {
+  await ready();
+  await db.execute({
+    sql: `UPDATE interventions
+          SET statut = ?, creneau_confirme_id = NULL, veto_deadline_at = NULL,
+              updated_at = strftime('%Y-%m-%dT%H:%M:%fZ','now')
+          WHERE id = ?`,
+    args: [statut, id],
+  });
+}
