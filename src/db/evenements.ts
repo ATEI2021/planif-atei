@@ -1,26 +1,33 @@
-import { db } from "./client";
+import { db, ready } from "./client";
 import type { AuteurEvenement, Evenement, TypeEvenement } from "./types";
 
-export function ajouterEvenement(
+export async function ajouterEvenement(
   interventionId: number,
   type: TypeEvenement,
   auteur: AuteurEvenement,
   detail = ""
-): void {
-  db.prepare(
-    "INSERT INTO evenements (intervention_id, type, detail, auteur) VALUES (?, ?, ?, ?)"
-  ).run(interventionId, type, detail, auteur);
+): Promise<void> {
+  await ready();
+  await db.execute({
+    sql: "INSERT INTO evenements (intervention_id, type, detail, auteur) VALUES (?, ?, ?, ?)",
+    args: [interventionId, type, detail, auteur],
+  });
 }
 
-export function listEvenements(interventionId: number): Evenement[] {
-  return db
-    .prepare("SELECT * FROM evenements WHERE intervention_id = ? ORDER BY created_at ASC")
-    .all(interventionId) as Evenement[];
+export async function listEvenements(interventionId: number): Promise<Evenement[]> {
+  await ready();
+  const result = await db.execute({
+    sql: "SELECT * FROM evenements WHERE intervention_id = ? ORDER BY created_at ASC",
+    args: [interventionId],
+  });
+  return result.rows as unknown as Evenement[];
 }
 
-export function evenementDejaEnvoye(interventionId: number, type: TypeEvenement): boolean {
-  const row = db
-    .prepare("SELECT 1 FROM evenements WHERE intervention_id = ? AND type = ? LIMIT 1")
-    .get(interventionId, type);
-  return row !== undefined;
+export async function evenementDejaEnvoye(interventionId: number, type: TypeEvenement): Promise<boolean> {
+  await ready();
+  const result = await db.execute({
+    sql: "SELECT 1 FROM evenements WHERE intervention_id = ? AND type = ? LIMIT 1",
+    args: [interventionId, type],
+  });
+  return result.rows.length > 0;
 }
