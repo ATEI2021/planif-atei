@@ -6,7 +6,7 @@ export function smsInvitation(params: {
   lien: string;
   duree: string;
 }): string {
-  return `ATEI, mandate par ${params.compagnie} - Sinistre ${params.ref}. Choisissez la date de votre intervention : ${params.lien}. Duree prevue : ${params.duree}.`;
+  return `SARL ATEI mandate par ${params.compagnie} - Dossier ${params.ref} vous invite a choisir les jours d'intervention. Duree travaux : ${params.duree}. ${params.lien}`;
 }
 
 export function smsConfirmation(params: {
