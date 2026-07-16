@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createIntervention } from "@/db/interventions";
+import { createIntervention, getInterventionByReference } from "@/db/interventions";
 
 export const dynamic = "force-dynamic";
 
@@ -29,12 +29,23 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: `Champs manquants : ${manquants.join(", ")}` }, { status: 400 });
   }
 
+  const referenceSinistre = String(body.reference_sinistre).trim();
+  const existante = await getInterventionByReference(referenceSinistre);
+  if (existante) {
+    return NextResponse.json({
+      id: existante.id,
+      token: existante.token,
+      url: `${process.env.APP_URL ?? "http://localhost:3000"}/backoffice/${existante.id}`,
+      dejaExistante: true,
+    });
+  }
+
   const preparatifsListe = Array.isArray(body.preparatifs_liste)
     ? body.preparatifs_liste.map((p) => String(p))
     : [];
 
   const intervention = await createIntervention({
-    reference_sinistre: String(body.reference_sinistre).trim(),
+    reference_sinistre: referenceSinistre,
     compagnie: String(body.compagnie).trim(),
     assure_nom: String(body.assure_nom).trim(),
     assure_telephone: String(body.assure_telephone).trim(),

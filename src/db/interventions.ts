@@ -45,6 +45,15 @@ export async function getInterventionById(id: number): Promise<Intervention | un
   return result.rows[0] ? toPlain<Intervention>(result.rows[0]) : undefined;
 }
 
+export async function getInterventionByReference(reference: string): Promise<Intervention | undefined> {
+  await ready();
+  const result = await db.execute({
+    sql: "SELECT * FROM interventions WHERE reference_sinistre = ? ORDER BY created_at DESC LIMIT 1",
+    args: [reference],
+  });
+  return result.rows[0] ? toPlain<Intervention>(result.rows[0]) : undefined;
+}
+
 export async function getInterventionByToken(token: string): Promise<Intervention | undefined> {
   await ready();
   const result = await db.execute({ sql: "SELECT * FROM interventions WHERE token = ?", args: [token] });
